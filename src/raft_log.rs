@@ -27,7 +27,7 @@ use crate::util;
 
 pub use crate::util::NO_LIMIT;
 
-use slog::{debug, info, trace};
+use slog::{debug, error, info, trace};
 
 /// Raft log implementation
 pub struct RaftLog<T: Storage> {
@@ -477,6 +477,12 @@ impl<T: Storage> RaftLog<T> {
         }
         let first_index = self.first_index();
         if low < first_index {
+            error!(
+                self.unstable.logger,
+                "must_check_outofbounds failed.StorageError::Compacted";
+                "low" => low,
+                "first_index" => first_index,
+            );
             return Some(Error::Store(StorageError::Compacted));
         }
 
